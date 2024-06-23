@@ -14,6 +14,7 @@ export class Game extends Engine {
       displayMode: DisplayMode.FitScreen,
     });
 
+    this.backgroundSpeed = 2; // Define background speed here
     this.player2 = null;
 
     this.start(ResourceLoader)
@@ -38,19 +39,13 @@ export class Game extends Engine {
 
     // Switch to the intro scene
     this.goToScene('intro');
-
-    // Example: Switch to the main game scene after 5 seconds
-    // setTimeout(() => {
-    //   this.goToScene('main');
-    // }, 0);
   }
 
   initializeMainGameScene(scene) {
     scene.onInitialize = (engine) => {
       console.log('Starting the game!');
 
-      const backgroundSpeed = 2;
-      const scrollingBackground = new ScrollingBackground(engine, backgroundSpeed);
+      const scrollingBackground = new ScrollingBackground(engine, this.backgroundSpeed);
       scrollingBackground.initialize();
 
       const player1 = new Player(Resources.Player, new Vector(400, 300), {
@@ -117,7 +112,7 @@ export class Game extends Engine {
   spawnObstacle(engine) {
     console.log('Spawning obstacle');
     const pos = new Vector(Math.random() * engine.drawWidth, 0);
-    const vel = new Vector(0, Math.random() * 100 + 50);
+    const vel = new Vector(0, Math.random() * 100 + this.backgroundSpeed + 50); // Ensure a speed greater than background speed
     const obstacleSprite = Resources.Meteor.toSprite();
     const obstacle = new Obstacle(pos, vel, 50, 50, obstacleSprite);
     engine.add(obstacle);
@@ -126,7 +121,7 @@ export class Game extends Engine {
   spawnMeteor(engine) {
     console.log('Spawning meteor');
     const pos = new Vector(Math.random() * engine.drawWidth, 0);
-    const vel = new Vector(0, Math.random() * 100 + 50);
+    const vel = new Vector(0, Math.random() * 100 + this.backgroundSpeed + 50); // Ensure a speed greater than background speed
     const meteor = new Meteor(pos, vel);
     engine.add(meteor);
   }
@@ -134,7 +129,7 @@ export class Game extends Engine {
   spawnEnemy(engine) {
     console.log('Spawning enemy');
     const pos = new Vector(Math.random() * engine.drawWidth, 0);
-    const vel = new Vector(0, Math.random() * 100 + 50);
+    const vel = new Vector(0, Math.random() * 100 + this.backgroundSpeed + 50); // Ensure a speed greater than background speed
     const enemy = new Enemy(pos, vel);
     engine.add(enemy);
   }
