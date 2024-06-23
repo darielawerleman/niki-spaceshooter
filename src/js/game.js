@@ -1,10 +1,11 @@
 import '../css/style.css';
-import { Engine, Vector, DisplayMode, Timer, Scene, Input } from 'excalibur';
+import { Engine, Vector, DisplayMode, Timer, Scene, Input, Label, Color, FontUnit, Font } from 'excalibur';
 import { Resources, ResourceLoader } from './resources.js';
 import { Player } from './player.js';
 import ScrollingBackground from './galaxy.js';
 import { Obstacle, Enemy, Meteor } from './obstacle.js';
-import { IntroScene } from './IntroScene.js'; // Ensure the path is correct
+import { IntroScene } from './IntroScene.js';
+import { GameOverScene } from './GameOverScene.js';
 
 export class Game extends Engine {
   constructor() {
@@ -14,8 +15,9 @@ export class Game extends Engine {
       displayMode: DisplayMode.FitScreen,
     });
 
-    this.backgroundSpeed = 2; // Define background speed here
     this.player2 = null;
+    this.score = 0;
+    this.scoreLabel = null;
 
     this.start(ResourceLoader)
       .then(() => {
@@ -34,6 +36,10 @@ export class Game extends Engine {
     const mainGameScene = new Scene();
     this.add('main', mainGameScene);
 
+    // Create and add the game over scene
+    const gameOverScene = new GameOverScene();
+    this.add('gameover', gameOverScene);
+
     // Initialize the main game scene
     this.initializeMainGameScene(mainGameScene);
 
@@ -45,7 +51,22 @@ export class Game extends Engine {
     scene.onInitialize = (engine) => {
       console.log('Starting the game!');
 
-      const scrollingBackground = new ScrollingBackground(engine, this.backgroundSpeed);
+      // Initialize the score label
+      this.scoreLabel = new Label({
+        text: `Score: ${this.score}`,
+        pos: new Vector(100, 50), // Adjusted position to be more visible
+        color: Color.White,
+        font: new Font({
+          family: 'Arial',
+          size: 30,
+          unit: FontUnit.Px,
+        }),
+        textAlign: 'left' // Ensure text is aligned left
+      });
+      engine.add(this.scoreLabel); // Add to engine instead of scene to ensure visibility
+
+      const backgroundSpeed = 2;
+      const scrollingBackground = new ScrollingBackground(engine, backgroundSpeed);
       scrollingBackground.initialize();
 
       const player1 = new Player(Resources.Player, new Vector(400, 300), {
@@ -53,8 +74,8 @@ export class Game extends Engine {
         right: Input.Keys.Right,
         up: Input.Keys.Up,
         down: Input.Keys.Down,
-        shoot: Input.Keys.Enter
-      });
+        shoot: Input.Keys.Enter,
+      }, () => this.updateScore(100));
       engine.add(player1);
 
       engine.input.keyboard.on('press', (evt) => {
@@ -66,6 +87,20 @@ export class Game extends Engine {
       console.log('Player and background added to the game.');
 
       this.startSpawning(engine);
+
+      player1.on('precollision', (evt) => {
+        if (evt.other instanceof Obstacle || evt.other instanceof Enemy || evt.other instanceof Meteor) {
+          engine.goToScene('gameover');
+        }
+      });
+
+      if (this.player2) {
+        this.player2.on('precollision', (evt) => {
+          if (evt.other instanceof Obstacle || evt.other instanceof Enemy || evt.other instanceof Meteor) {
+            engine.goToScene('gameover');
+          }
+        });
+      }
     };
   }
 
@@ -75,8 +110,8 @@ export class Game extends Engine {
       right: Input.Keys.D,
       up: Input.Keys.W,
       down: Input.Keys.S,
-      shoot: Input.Keys.Space
-    });
+      shoot: Input.Keys.Space,
+    }, () => this.updateScore(100));
     engine.add(this.player2);
     console.log('Player 2 deployed');
   }
@@ -109,10 +144,17 @@ export class Game extends Engine {
     console.log('Spawning timers started.');
   }
 
+  updateScore(points) {
+    this.score += points;
+    if (this.scoreLabel) {
+      this.scoreLabel.text = `Score: ${this.score}`;
+    }
+  }
+
   spawnObstacle(engine) {
     console.log('Spawning obstacle');
     const pos = new Vector(Math.random() * engine.drawWidth, 0);
-    const vel = new Vector(0, Math.random() * 100 + this.backgroundSpeed + 50); // Ensure a speed greater than background speed
+    const vel = new Vector(0, Math.random() * 100 + 50);
     const obstacleSprite = Resources.Meteor.toSprite();
     const obstacle = new Obstacle(pos, vel, 50, 50, obstacleSprite);
     engine.add(obstacle);
@@ -121,7 +163,7 @@ export class Game extends Engine {
   spawnMeteor(engine) {
     console.log('Spawning meteor');
     const pos = new Vector(Math.random() * engine.drawWidth, 0);
-    const vel = new Vector(0, Math.random() * 100 + this.backgroundSpeed + 50); // Ensure a speed greater than background speed
+    const vel = new Vector(0, Math.random() * 100 + 50);
     const meteor = new Meteor(pos, vel);
     engine.add(meteor);
   }
@@ -129,10 +171,18 @@ export class Game extends Engine {
   spawnEnemy(engine) {
     console.log('Spawning enemy');
     const pos = new Vector(Math.random() * engine.drawWidth, 0);
-    const vel = new Vector(0, Math.random() * 100 + this.backgroundSpeed + 50); // Ensure a speed greater than background speed
+    const vel = new Vector(0, Math.random() * 100 + 50);
     const enemy = new Enemy(pos, vel);
+    enemy.on('kill', () => {
+      this.updateScore(100); // Update score when an enemy is destroyed
+    });
     engine.add(enemy);
   }
 }
 
 new Game();
+
+
+
+
+

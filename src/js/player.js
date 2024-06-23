@@ -1,8 +1,9 @@
 import { Actor, Vector, Input } from 'excalibur';
+import { Resources } from './resources.js';
 import { Bullet } from './bullet.js';
 
 class Player extends Actor {
-  constructor(image, pos, keyBindings) {
+  constructor(image, pos, keyBindings, onDestroy) {
     super({
       pos: pos || new Vector(400, 300), // Initial position
       vel: new Vector(0, 0), // Initial velocity
@@ -13,6 +14,7 @@ class Player extends Actor {
     this.scale = new Vector(0.5, 0.5);
     this.keyBindings = keyBindings;
     this.engine = null;
+    this.onDestroy = onDestroy;
   }
 
   onInitialize(engine) {
@@ -52,7 +54,8 @@ class Player extends Actor {
   shoot() {
     const bullet = new Bullet(
       new Vector(this.pos.x, this.pos.y - this.height / 2),
-      new Vector(0, -400) // Bullet speed, adjust as necessary
+      new Vector(0, -400), // Bullet speed, adjust as necessary
+      this.onDestroy // Pass the onDestroy callback to the bullet
     );
     this.engine.add(bullet);
   }
@@ -86,3 +89,4 @@ class Player extends Actor {
 }
 
 export { Player };
+
