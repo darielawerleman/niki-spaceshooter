@@ -31,7 +31,7 @@ class Obstacle extends Actor {
     super.update(engine, delta);
 
     // Remove obstacle if it goes out of the screen
-    if (this.pos.y > engine.drawHeight + this.height || this.pos.x < -this.width || this.pos.x > engine.drawWidth + this.width) {
+    if (this.pos.y > engine.drawHeight || this.pos.x < 0 || this.pos.x > engine.drawWidth) {
       this.kill();
     }
   }
@@ -65,7 +65,7 @@ class Meteor extends Actor {
     super.update(engine, delta);
 
     // Remove meteor if it goes out of the screen
-    if (this.pos.y > engine.drawHeight + this.height || this.pos.x < -this.width || this.pos.x > engine.drawWidth + this.width) {
+    if (this.pos.y > engine.drawHeight || this.pos.x < 0 || this.pos.x > engine.drawWidth) {
       this.kill();
     }
   }
@@ -99,7 +99,7 @@ class Enemy extends Actor {
     super.update(engine, delta);
 
     // Remove enemy if it goes out of the screen
-    if (this.pos.y > engine.drawHeight + this.height || this.pos.x < -this.width || this.pos.x > engine.drawWidth + this.width) {
+    if (this.pos.y > engine.drawHeight || this.pos.x < 0 || this.pos.x > engine.drawWidth) {
       this.kill();
     }
   }
